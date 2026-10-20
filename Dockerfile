@@ -16,11 +16,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy project files
 COPY . .
 
-# Generate and load synthetic dataset
-RUN python data/generator.py && python data/loader.py
+# Initialize clean database
+RUN python data/loader.py
 
-# Expose API and UI ports
-EXPOSE 8000 8501
+# Hugging Face Spaces and container standard port
+EXPOSE 7860
 
-# Default command starts FastAPI API server
-CMD ["uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Default command starts Streamlit dashboard on port 7860
+CMD ["streamlit", "run", "app.py", "--server.port", "7860", "--server.address", "0.0.0.0"]
