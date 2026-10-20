@@ -94,3 +94,27 @@ def test_ingest_endpoint():
     import os
     from src.config import DATA_DIR
     load_csv("tariff", os.path.join(DATA_DIR, "tariff.csv"), replace=True)
+
+def test_simulate_custom_endpoint():
+    response = client.get("/simulate/custom?tariff_delta_pct=10.0&volume_delta_pct=-5.0&repair_leak=true")
+    assert response.status_code == 200
+    data = response.json()
+    assert "simulated_bill" in data
+    assert data["leak_repaired"] is True
+    assert data["tariff_delta_pct"] == 10.0
+    assert data["volume_delta_pct"] == -5.0
+    assert data["co2e_saved_tonnes"] > 0
+
+def test_direct_service_fallback():
+    from src.ui.app import direct_service_dispatch
+    health = direct_service_dispatch("/health")
+    assert health["status"] == "healthy"
+    assert health["database"] == "connected"
+
+    decomp = direct_service_dispatch("/decomposition")
+    assert "bridge" in decomp
+    assert len(decomp["bridge"]) == 5
+
+    res = direct_service_dispatch("/analyze", json_data={"question": "Why did the bill go up 15%?"})
+    assert res["answer_type"] == "decomposition"
+    assert res["run_id"].startswith("en-")

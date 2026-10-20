@@ -1,7 +1,18 @@
+---
+title: Factory Energy Cost Decomposition Agent
+emoji: ⚡
+colorFrom: blue
+colorTo: indigo
+sdk: streamlit
+sdk_version: "1.36.0"
+app_file: app.py
+pinned: false
+---
+
 # Factory Energy Cost Decomposition and Savings Agent
 **HCLTech | Future Ready AI Engineer Hackathon**  
 **Team Name**: Ninjas In Pyjamas (NIP)  
-**Date**: 11-OCT-2026 | **Version**: 1.0.0 (Final Submission)
+**Date**: 11-OCT-2026 | **Version**: 1.0.0 (Production Overhaul)
 
 ---
 
@@ -89,24 +100,17 @@ git clone <repo_url>
 cd HCL-Hackathon
 pip install -r requirements.txt
 
-# 2. Generate and validate the synthetic dataset
-python data/generator.py
-python data/validate_data.py
+# 2. Automated one-command setup (generates data, loads DuckDB, validates)
+python run.py --mode setup
 
-# 3. Load data into DuckDB
-python data/loader.py
+# 3. Launch Application (Choose one):
+python run.py --mode ui       # Starts Streamlit Dashboard (:8501) with resilient in-process fallback
+python run.py --mode api      # Starts FastAPI Backend (:8000)
+python run.py --mode all      # Starts both API and Streamlit UI concurrently
 
-# 4. Run automated test suite (14 unit & contract tests)
-python -m pytest tests/ -v
-
-# 5. Run evaluation benchmark suite (22 test scenarios)
-python eval/run_eval.py
-
-# 6. Start the API server
-python -m uvicorn src.api.main:app --host 0.0.0.0 --port 8000
-
-# 7. Start the Streamlit UI (in a separate terminal)
-streamlit run src/ui/app.py --server.port 8501
+# 4. Run automated tests and benchmark evaluations
+python run.py --mode test     # Runs 14 pytest unit & contract tests
+python run.py --mode eval     # Runs 22-case benchmark evaluation (100% Faithfulness & Intent)
 ```
 
 ---
@@ -242,13 +246,13 @@ python data/loader.py --dir path/to/judge_data/
 
 ## 8. Deliverables & Documentation Index
 
-- 📋 [Evaluation Report & Benchmark (eval/eval_report.md)](file:///d:/HCL%20Hackathon/HCL-Hackathon/eval/eval_report.md)
-- 📊 [Dataset Data Card - Annex D (data/data_card.md)](file:///d:/HCL%20Hackathon/HCL-Hackathon/data/data_card.md)
-- 🏛️ [Architecture Justification (docs/architecture.md)](file:///d:/HCL%20Hackathon/HCL-Hackathon/docs/architecture.md)
-- 🤖 [AI-Usage Disclosure (docs/ai_disclosure.md)](file:///d:/HCL%20Hackathon/HCL-Hackathon/docs/ai_disclosure.md)
-- 👥 [Team Contribution Statement (docs/team_contributions.md)](file:///d:/HCL%20Hackathon/HCL-Hackathon/docs/team_contributions.md)
-- ✍️ [Signed Declaration of Original Work (docs/original_work_declaration.md)](file:///d:/HCL%20Hackathon/HCL-Hackathon/docs/original_work_declaration.md)
+- 📋 [Evaluation Report & Benchmark](eval/eval_report.md)
+- 📊 [Dataset Data Card - Annex D](data/data_card.md)
+- 🏛️ [Architecture Justification](docs/architecture.md)
+- 🤖 [AI-Usage Disclosure](docs/ai_disclosure.md)
+- 👥 [Team Contribution Statement](docs/team_contributions.md)
+- ✍️ [Signed Declaration of Original Work](docs/original_work_declaration.md)
 - 🔍 Sample Traces (Annex C):
-  - [trace_decomposition.json](file:///d:/HCL%20Hackathon/HCL-Hackathon/docs/traces/trace_decomposition.json)
-  - [trace_recommendation.json](file:///d:/HCL%20Hackathon/HCL-Hackathon/docs/traces/trace_recommendation.json)
-  - [trace_calculated.json](file:///d:/HCL%20Hackathon/HCL-Hackathon/docs/traces/trace_calculated.json)
+  - [trace_decomposition.json](docs/traces/trace_decomposition.json)
+  - [trace_recommendation.json](docs/traces/trace_recommendation.json)
+  - [trace_calculated.json](docs/traces/trace_calculated.json)

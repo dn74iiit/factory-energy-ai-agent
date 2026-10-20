@@ -46,4 +46,42 @@ class WhatIfSimulator:
             "pct_bill_reduction": round((simulated_cost_savings / decomp["bill_current"]) * 100.0, 2)
         }
 
+    def simulate_custom(self, period: str = "2026-Q3", tariff_delta_pct: float = 0.0, 
+                        volume_delta_pct: float = 0.0, repair_leak: bool = False) -> Dict[str, Any]:
+        """Simulates custom management parameters dynamically."""
+        decomp = decomposition_engine.decompose(period=period)
+        b0 = decomp["bill_baseline"]
+        b1 = decomp["bill_current"]
+        
+        t_pts = decomp["bridge"][0]["pct_points"]
+        current_tariff_cost = b0 * (t_pts / 100.0)
+        sim_tariff_cost = current_tariff_cost * (1.0 + (tariff_delta_pct / 100.0))
+        delta_tariff_dollars = sim_tariff_cost - current_tariff_cost
+
+        v_pts = decomp["bridge"][2]["pct_points"]
+        current_vol_cost = b0 * (v_pts / 100.0)
+        sim_vol_cost = current_vol_cost * (1.0 + (volume_delta_pct / 100.0))
+        delta_vol_dollars = sim_vol_cost - current_vol_cost
+
+        leak_kwh = 48000.0 if repair_leak else 0.0
+        leak_dollars = leak_kwh * 0.11
+        leak_co2e = (leak_kwh * EMISSION_FACTOR_KG_PER_KWH) / 1000.0
+
+        simulated_bill = max(0.0, b1 + delta_tariff_dollars + delta_vol_dollars - leak_dollars)
+        net_savings = b1 - simulated_bill
+        net_pct = (net_savings / b1) * 100.0 if b1 > 0 else 0.0
+
+        return {
+            "period": period,
+            "baseline_bill": round(b0, 2),
+            "current_bill": round(b1, 2),
+            "simulated_bill": round(simulated_bill, 2),
+            "net_difference_dollars": round(net_savings, 2),
+            "net_difference_pct": round(net_pct, 2),
+            "leak_repaired": repair_leak,
+            "co2e_saved_tonnes": round(leak_co2e, 2),
+            "tariff_delta_pct": tariff_delta_pct,
+            "volume_delta_pct": volume_delta_pct
+        }
+
 what_if_simulator = WhatIfSimulator()

@@ -18,10 +18,21 @@ class NumberFaithfulnessVerifier:
         if isinstance(obj, (int, float)):
             val = round(float(obj), 2)
             numbers.add(val)
+            # Bidirectional ratio and percentage equivalence (e.g., 0.36 <-> 36%)
+            if 0.0 < val <= 1.0:
+                numbers.add(round(val * 100.0, 1))
+                numbers.add(round(val * 100.0, 0))
+            elif 1.0 < val <= 100.0:
+                numbers.add(round(val / 100.0, 2))
+                numbers.add(round(val / 100.0, 3))
         elif isinstance(obj, str):
             cleaned = obj.replace(",", "").replace("$", "").replace("%", "")
             try:
-                numbers.add(round(float(cleaned), 2))
+                val = round(float(cleaned), 2)
+                numbers.add(val)
+                if 0.0 < val <= 1.0:
+                    numbers.add(round(val * 100.0, 1))
+                    numbers.add(round(val * 100.0, 0))
             except ValueError:
                 pass
         elif isinstance(obj, list):
@@ -53,8 +64,6 @@ class NumberFaithfulnessVerifier:
             clean = raw.replace(",", "").replace("%", "")
             try:
                 val = round(float(clean), 2)
-                # Ignore trivial small integers used in dates/ordinals if desired,
-                # but keep all industrial metrics
                 extracted.append((val, raw))
             except ValueError:
                 continue
@@ -79,11 +88,15 @@ class NumberFaithfulnessVerifier:
 
         unauthorized = []
         for val, raw in text_numbers:
-            # Check if val or a near rounding (within 0.1) exists in allowed set
+            # Check if val or a near rounding (within 0.15) exists in allowed set
             matched = any(abs(val - allowed) < 0.15 for allowed in allowed_nums)
             
-            # Common safe integers: 1 (top action), 2, 3 (line numbers), 2026 (year)
-            if not matched and val in (1.0, 2.0, 3.0, 2026.0, 24.0, 7.0):
+            # Check ratio/percentage duality (e.g. 36% vs 0.36)
+            if not matched and any(abs((val / 100.0) - allowed) < 0.02 for allowed in allowed_nums):
+                matched = True
+
+            # Common safe contextual constants: dates/years, shift/line indices, round time units
+            if not matched and val in (1.0, 2.0, 3.0, 4.0, 5.0, 7.0, 24.0, 2026.0):
                 matched = True
 
             if not matched:

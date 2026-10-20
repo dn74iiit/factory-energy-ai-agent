@@ -19,12 +19,37 @@ class DatabaseManager:
         try:
             self._con = duckdb.connect(self.db_path)
             self._init_db()
+            self._auto_load_if_empty()
         except Exception:
-            self._con = duckdb.connect(self.db_path, read_only=True)
+            try:
+                self._con = duckdb.connect(self.db_path, read_only=True)
+            except Exception:
+                # In-memory fallback if file is locked
+                self._con = duckdb.connect(":memory:")
+                self._init_db()
 
     def get_connection(self):
-        """Returns a cursor to the DuckDB database."""
-        return self._con.cursor()
+        """Returns a cursor to the DuckDB database with auto-reconnect."""
+        try:
+            return self._con.cursor()
+        except Exception:
+            try:
+                self._con = duckdb.connect(self.db_path)
+            except Exception:
+                self._con = duckdb.connect(self.db_path, read_only=True)
+            return self._con.cursor()
+
+    def _auto_load_if_empty(self):
+        """Automatically loads default synthetic dataset if database is freshly initialized."""
+        try:
+            with self.get_connection() as con:
+                count = con.execute("SELECT COUNT(*) FROM meter_15min").fetchone()[0]
+            if count == 0:
+                from data.loader import load_all_from_directory
+                if os.path.exists(DATA_DIR):
+                    load_all_from_directory(str(DATA_DIR), replace=True)
+        except Exception:
+            pass
 
     def _init_db(self):
         """Initializes tables if they do not exist."""

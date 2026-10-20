@@ -34,6 +34,7 @@ services:
     environment:
       - API_HOST=api
       - API_PORT=8000
+      - API_BASE_URL=http://api:8000
       - DB_PATH=/app/data/energy.duckdb
     volumes:
       - ./data:/app/data

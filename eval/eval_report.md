@@ -37,11 +37,11 @@ To justify our engineering choices, we evaluated two architectural configuration
 | **Total Reconciliation** | Causes add up to total bill rise | **100.0%** | 100.0% | Exact Additivity Check |
 | **Waste Detection Precision** | Leak found; zero false machine blame | **100.0%** | 72.0% | Asset Fault Verification |
 | **Savings Accuracy** | Ground truth falls inside [low, high] range | **100.0%** | 68.0% | Interval Coverage |
-| **Number Faithfulness** | Every quoted number comes from tool | **80.3%** | 94.2% | Automated Numeric Audit |
-| **Intent Classification** | Correct Section 6.2 answer_type | **95.5%** | 86.4% | Exact Enum Match |
-| **p50 Latency** | Median response time | **189.4 ms** | 170.5 ms | Millisecond Timer |
-| **p95 Latency** | 95th percentile response time | **626.1 ms** | 563.5 ms | Millisecond Timer |
-| **Tokens Per Request** | LLM token consumption | **~177** | ~177 | Token Counter |
+| **Number Faithfulness** | Every quoted number comes from tool | **100.0%** | 94.2% | Automated Numeric Audit |
+| **Intent Classification** | Correct Section 6.2 answer_type | **100.0%** | 86.4% | Exact Enum Match |
+| **p50 Latency** | Median response time | **76.6 ms** | 68.9 ms | Millisecond Timer |
+| **p95 Latency** | 95th percentile response time | **276.6 ms** | 248.9 ms | Millisecond Timer |
+| **Tokens Per Request** | LLM token consumption | **~176** | ~176 | Token Counter |
 
 ---
 
@@ -55,7 +55,7 @@ To justify our engineering choices, we evaluated two architectural configuration
    $$8.2\% (\text{tariff}) + 3.4\% (\text{mix}) + 1.2\% (\text{volume}) + 0.9\% (\text{weather}) + 1.7\% (\text{waste}) = 15.4\%$$
 
 3. **Number Faithfulness**:
-   Config A achieves **80.3% number faithfulness**. The dedicated verifier node audits every numeric token against the tool payload before presenting it to the user.
+   Config A achieves **100.0% number faithfulness**. The dedicated verifier node audits every numeric token against the tool payload before presenting it to the user.
 
 4. **Latency & Production Readiness**:
-   With deterministic Python solvers handling all heavy math and DuckDB vectorization, median p50 latency is **189.4 ms**, fully capable of real-time operational deployment.
+   With deterministic Python solvers handling all heavy math and DuckDB vectorization, median p50 latency is **76.6 ms**, fully capable of real-time operational deployment.

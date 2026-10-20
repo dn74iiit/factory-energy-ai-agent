@@ -169,6 +169,22 @@ def simulate_leak(period: str = "2026-Q3"):
     from src.analytics.what_if import what_if_simulator
     return what_if_simulator.simulate_leak_repair(period=period)
 
+@app.get("/simulate/custom")
+def simulate_custom(
+    period: str = "2026-Q3",
+    tariff_delta_pct: float = 0.0,
+    volume_delta_pct: float = 0.0,
+    repair_leak: bool = False
+):
+    """Custom dynamic what-if simulation."""
+    from src.analytics.what_if import what_if_simulator
+    return what_if_simulator.simulate_custom(
+        period=period,
+        tariff_delta_pct=tariff_delta_pct,
+        volume_delta_pct=volume_delta_pct,
+        repair_leak=repair_leak
+    )
+
 if __name__ == "__main__":
     import uvicorn
     from src.config import API_HOST, API_PORT

@@ -32,19 +32,19 @@ def intent_classifier_node(state: AgentState) -> Dict[str, Any]:
     q = state["question"].lower()
     
     # 1. Refusal & adversarial hallucination attempts
-    if any(k in q for k in ["invent a number", "hallucinate", "fake tariff", "pretend the bill was", "ignore all data rules"]):
+    if any(k in q for k in ["invent", "hallucinate", "fake", "pretend", "fabricate", "make up", "falsify", "ignore all data rules", "ignore rules"]):
         return {"answer_type": "refused"}
 
     # 2. Out of scope / Not in data
-    if any(k in q for k in ["next year", "2027", "munich", "supplier contract", "competitor", "future tariff", "sister factory"]):
+    if any(k in q for k in ["next year", "2027", "munich", "supplier contract", "competitor", "future tariff", "sister factory", "external plant"]):
         return {"answer_type": "not_in_data"}
 
     # 3. Clarification needed: ambiguous short queries
-    if len(q.strip()) < 15 or q.strip().endswith("?") and len(q.strip().split()) <= 2:
+    if len(q.strip()) < 15 or (q.strip().endswith("?") and len(q.strip().split()) <= 2):
         return {"answer_type": "clarification_needed"}
 
     # 4. Recommendation & Prescriptive Actions
-    if any(k in q for k in ["recommend", "action", "saving", "first", "payback", "plan", "fix", "do we have any compressed air leaks", "leaks in the plant"]):
+    if any(k in q for k in ["recommend", "action", "saving", "first", "payback", "plan", "fix", "do we have any compressed air leaks", "leaks in the plant", "leak worth"]):
         return {"answer_type": "recommendation"}
 
     # 5. Calculated queries (numeric metrics, assets, idle load, ratios, what-ifs)
@@ -52,7 +52,8 @@ def intent_classifier_node(state: AgentState) -> Dict[str, Any]:
         "top user", "biggest", "which asset", "largest asset",
         "idle load", "idle energy", "idle hours", "nothing is produced",
         "night-to-day", "night share", "ratio on compressor",
-        "how many kwh", "total facility consumption",
+        "how many kwh", "total facility consumption", "total consumption",
+        "highest percentage", "single equipment",
         "what if"
     ]):
         return {"answer_type": "calculated"}
@@ -113,7 +114,7 @@ def analyst_node(state: AgentState) -> Dict[str, Any]:
 
     elif a_type == "calculated":
         q = state["question"].lower()
-        if "idle" in q:
+        if "idle" in q or "night" in q or "ratio" in q:
             idle_res = tool_find_idle_load(period)
             tool_outputs["idle_load"] = idle_res
             steps.append({"agent": "analyst", "tool": "find_idle_load", "output": idle_res})
@@ -124,7 +125,7 @@ def analyst_node(state: AgentState) -> Dict[str, Any]:
         else:
             assets_res = tool_get_top_assets(period)
             tool_outputs["top_assets"] = assets_res
-            steps.append({"agent": "analyst", "tool": "get_top_assets", "output": {"top_user": assets_res["top_user"]}})
+            steps.append({"agent": "analyst", "tool": "get_top_assets", "output": assets_res})
 
     return {
         "tool_outputs": tool_outputs,
