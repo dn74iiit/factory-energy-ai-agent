@@ -19,7 +19,7 @@ class DatabaseManager:
         try:
             self._con = duckdb.connect(self.db_path)
             self._init_db()
-            self._auto_load_if_empty()
+            self.ensure_loaded()
         except Exception:
             try:
                 self._con = duckdb.connect(self.db_path, read_only=True)
@@ -39,17 +39,26 @@ class DatabaseManager:
                 self._con = duckdb.connect(self.db_path, read_only=True)
             return self._con.cursor()
 
-    def _auto_load_if_empty(self):
-        """Automatically loads default synthetic dataset if database is freshly initialized."""
+    def ensure_loaded(self):
+        """Ensures that tables have data loaded from CSV files, completely free of circular imports."""
         try:
             with self.get_connection() as con:
                 count = con.execute("SELECT COUNT(*) FROM meter_15min").fetchone()[0]
-            if count == 0:
-                from data.loader import load_all_from_directory
-                if os.path.exists(DATA_DIR):
-                    load_all_from_directory(str(DATA_DIR), replace=True)
         except Exception:
-            pass
+            count = 0
+
+        if count == 0:
+            import pandas as pd
+            from src.config import DATA_DIR
+            data_dir = str(DATA_DIR)
+            for table_name in ["meter_15min", "tariff", "production", "weather"]:
+                csv_path = os.path.join(data_dir, f"{table_name}.csv")
+                if os.path.exists(csv_path):
+                    try:
+                        df = pd.read_csv(csv_path)
+                        self.load_table_from_df(table_name, df, replace=True)
+                    except Exception as e:
+                        print(f"Auto-load error for {table_name}: {e}")
 
     def _init_db(self):
         """Initializes tables if they do not exist."""

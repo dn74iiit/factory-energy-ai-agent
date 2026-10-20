@@ -24,6 +24,13 @@ api_host = os.getenv("API_HOST", "localhost")
 api_port = os.getenv("API_PORT", "8000")
 API_BASE_URL = os.getenv("API_BASE_URL", f"http://{api_host}:{api_port}")
 
+# Ensure local data is loaded
+try:
+    from src.database import db
+    db.ensure_loaded()
+except Exception as e:
+    pass
+
 st.set_page_config(
     page_title="Factory Energy Cost Agent",
     page_icon="⚡",
